@@ -3,9 +3,12 @@ package com.example.kavya.mytrail2;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
@@ -24,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,6 +62,15 @@ public class ChatMain extends ActionBarActivity {
     Button option2Dismiss;
     static boolean active = false;
 
+
+
+    static MessageDBHelper msgDBHelper;
+    static SQLiteDatabase mydb;
+    static Cursor myCursor;
+    static MyCursorAdapter myCrsAdp;
+    static String msgType;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,8 +101,8 @@ public class ChatMain extends ActionBarActivity {
         //textSent = (TextView) findViewById(R.id.textSent);
         txtMessage = (EditText) findViewById(R.id.txt);
         lv = (ListView) findViewById(R.id.list);
-        adp = new ChatAdapter();
-        lv.setAdapter(adp);
+        //adp = new ChatAdapter();
+        //lv.setAdapter(adp);
         if(Smsreceiver.notQuestion) {
             txtMessage.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -114,6 +127,15 @@ public class ChatMain extends ActionBarActivity {
             });
 
         }
+
+
+
+
+        msgDBHelper = new MessageDBHelper(this);
+        mydb = msgDBHelper.getReadableDatabase();
+        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
+        myCrsAdp = new MyCursorAdapter(this,myCursor);
+        lv.setAdapter(myCrsAdp);
 
 
         //textSent.setVisibility(View.INVISIBLE); giving error..
@@ -196,7 +218,18 @@ public class ChatMain extends ActionBarActivity {
         data.add(message);
         msgsent = true;
         msgStatus.add(msgsent);
-        adp.notifyDataSetChanged();
+        //adp.notifyDataSetChanged();
+
+        //add required lines
+
+        msgType = "true";
+        ContentValues values = new ContentValues();
+        values.put(MessageDBHelper.MESSAGE_BODY, message);
+        values.put(MessageDBHelper.MESSAGE_TYPE, msgType);
+        msgDBHelper.insert(values);
+        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
+        myCrsAdp.changeCursor(myCursor);
+
         txtMessage.setText("");
     }
 
@@ -332,4 +365,50 @@ public class ChatMain extends ActionBarActivity {
         //@android:color/darker_gray
     }
 
+}
+class MyCursorAdapter extends CursorAdapter{
+
+    public MyCursorAdapter(Context context, Cursor c) {
+        super(context, c);
+    }
+
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        return LayoutInflater.from(context).inflate(R.layout.chatsend,parent,false);
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+
+        TextView txtmsg = (TextView)view.findViewById(R.id.textRcv2);
+        LinearLayout ll = (LinearLayout)view.findViewById(R.id.v1);
+        String message = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_BODY));
+        String notQuestion = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_TYPE));
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.weight = 6.0f;
+        if(message.length()>=25){
+            ViewGroup.LayoutParams pars = txtmsg.getLayoutParams();
+            pars.width = 850;
+            txtmsg.setLayoutParams(pars);
+        }
+        if (notQuestion.equals("true")) {
+            ll.setBackgroundResource(R.drawable.rectsend_bgd);
+            ll.setPadding(20, 20, 20, 20);
+            params.gravity = Gravity.RIGHT;
+
+            ll.setLayoutParams(params);
+        }
+        else {
+            ll.setBackgroundResource(R.drawable.rectrcv_bgd);
+            ll.setPadding(20, 20, 20, 20);
+            ll.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+            params.gravity = Gravity.LEFT;
+            ll.setLayoutParams(params);
+        }
+
+        txtmsg.setText(message);
+
+    }
 }

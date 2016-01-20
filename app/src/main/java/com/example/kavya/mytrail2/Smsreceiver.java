@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,6 +24,9 @@ public class Smsreceiver extends BroadcastReceiver {
     static boolean notQuestion = true;
     static String option1Txt;
     static String option2Txt;
+
+    MessageDBHelper dbHelper;
+
     public Smsreceiver() {
     }
 
@@ -30,6 +34,7 @@ public class Smsreceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // TODO: This method is called when the BroadcastReceiver is receiving
 
+        dbHelper = new MessageDBHelper(context);
 
         notificationmgr= (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         note = new Notification(R.drawable.ic_launcher,"Android Example Status message!", System.currentTimeMillis());
@@ -61,8 +66,19 @@ public class Smsreceiver extends BroadcastReceiver {
                     ChatMain.data.add(msgs[i].getMessageBody().toString());
                     ChatMain.msgsent = false;
                     ChatMain.msgStatus.add(ChatMain.msgsent);
-                    ChatMain.adp.notifyDataSetChanged();
+                    //ChatMain.adp.notifyDataSetChanged();
+
                     String sms = msgs[i].getMessageBody().toString();
+
+                    ChatMain.msgType = "false";
+                    ContentValues values = new ContentValues();
+                    values.put(MessageDBHelper.MESSAGE_BODY, sms);
+                    values.put(MessageDBHelper.MESSAGE_TYPE, ChatMain.msgType);
+                    dbHelper.insert(values);
+                    ChatMain.myCursor = ChatMain.mydb.rawQuery("SELECT * From messagesTable",null);
+                    ChatMain.myCrsAdp.changeCursor(ChatMain.myCursor);
+
+
                     //conditions to be checked.
                     if(sms.contains("Y or N")){
                         option1Txt = "Y";

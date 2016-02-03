@@ -97,7 +97,7 @@ public class Smsreceiver extends BroadcastReceiver {
                     }
                     //ChatMain.msgFormat.add(notQuestion);
 
-                    msgDB.insert(sms,msgTypeSent, notQuestion);
+                    msgDB.insert(sms,msgTypeSent, notQuestion, option1Txt,option2Txt);
                     Cursor myCursor = msgDB.getAll();
                     ChatMain.myCrsAdp.changeCursor(myCursor);
 

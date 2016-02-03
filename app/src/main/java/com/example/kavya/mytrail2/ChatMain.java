@@ -51,11 +51,12 @@ public class ChatMain extends ActionBarActivity {
     ListView lv;
     LinearLayout myLayout;
     static ArrayList<String> data = new ArrayList<String>();
-    static ArrayList<Boolean> msgStatus = new ArrayList<Boolean>();
+    //static ArrayList<Boolean> msgStatus = new ArrayList<Boolean>();
+    static ArrayList<Boolean> msgFormat = new ArrayList<Boolean>();
     //static ArrayAdapter adp;
-    static ChatAdapter adp;
-    TextView textSent;
-    static boolean msgsent = true;
+    //static ChatAdapter adp;
+//    TextView textSent;
+//    static boolean msgsent = true;
     PopupWindow popupWindow;
     TextView smstext;
     Button option1Dismiss;
@@ -64,11 +65,11 @@ public class ChatMain extends ActionBarActivity {
 
 
 
-    static MessageDBHelper msgDBHelper;
-    static SQLiteDatabase mydb;
+    //static MessagesDBHelper msgDBHelper;
+    static MessagesDatabase msgdb;
     static Cursor myCursor;
     static MyCursorAdapter myCrsAdp;
-    static String msgType;
+    static String msgTypeSent;
 
 
     @Override
@@ -77,7 +78,7 @@ public class ChatMain extends ActionBarActivity {
         setContentView(R.layout.activity_chat_main);
         myLayout = new LinearLayout(this);
 
-
+        msgdb = new MessagesDatabase(this);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);//to stop auto popingup of keyboard
 
 
@@ -103,25 +104,49 @@ public class ChatMain extends ActionBarActivity {
         lv = (ListView) findViewById(R.id.list);
         //adp = new ChatAdapter();
         //lv.setAdapter(adp);
-        if(Smsreceiver.notQuestion) {
+
+        //get msgType from db in desending order of _id
+        Cursor c = msgdb.getLast();
+        String msgType;
+//        boolean type = true;
+//        if(msgFormat.size()!=0)
+//             type = msgFormat.get(msgFormat.size()-1);
+//        if(type){
+//        if(cursor != null && cursor.moveToFirst()) {
+//            id = cursor.getInt(0);
+//        }
+        final String sms;
+        if(c!=null && c.getCount()>0 ) {
+            if(c.moveToFirst()) {
+                msgType = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGTYPE));
+                sms = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGS));
+            }else {
+                msgType = "true";
+                sms = "";
+            }
+
+        }else{
+            msgType = "true";
+            sms = "";
+        }
+        if(msgType.equals("true")){
             txtMessage.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(txtMessage, InputMethodManager.SHOW_IMPLICIT);
 
         }else {
             txtMessage.setFocusableInTouchMode(false);
-            final String sms;
-            if (data.size() != 0) {
-                sms = data.get(data.size()-1);
-            } else
-                sms = "";
+
+//            if (data.size() != 0) {
+//                sms = data.get(data.size()-1);
+//            } else
+//                sms = "";
 
             txtMessage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //myLayout.getBackground().setAlpha(220);
                     popup(sms);
-                    Smsreceiver.notQuestion = true;
                     //myLayout.getBackground().setAlpha(0);
                 }
             });
@@ -131,9 +156,12 @@ public class ChatMain extends ActionBarActivity {
 
 
 
-        msgDBHelper = new MessageDBHelper(this);
-        mydb = msgDBHelper.getReadableDatabase();
-        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
+//        msgDBHelper = new MessageDBHelper(this);
+//        mydb = msgDBHelper.getReadableDatabase();
+
+        //myCursor = mydb.rawQuery("SELECT * From messagesTable1",null);
+
+        myCursor = msgdb.getAll();
         myCrsAdp = new MyCursorAdapter(this,myCursor);
         lv.setAdapter(myCrsAdp);
 
@@ -216,20 +244,24 @@ public class ChatMain extends ActionBarActivity {
         //sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);
         //ll.setBackgroundResource(R.drawable.chat_bubble_green);
         data.add(message);
-        msgsent = true;
-        msgStatus.add(msgsent);
+        //msgsent = true;
+        //msgStatus.add(msgsent);
+        msgFormat.add(true);
         //adp.notifyDataSetChanged();
 
         //add required lines
 
-        msgType = "true";
-        ContentValues values = new ContentValues();
-        values.put(MessageDBHelper.MESSAGE_BODY, message);
-        values.put(MessageDBHelper.MESSAGE_TYPE, msgType);
-        msgDBHelper.insert(values);
-        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
-        myCrsAdp.changeCursor(myCursor);
+        msgTypeSent = "true";//sent or rcvd
+//        ContentValues values = new ContentValues();
+//        values.put(MessageDBHelper.MESSAGE_BODY, message);
+//        values.put(MessageDBHelper.MESSAGE_TYPE, msgTypeSent);
+//        msgDBHelper.insert(values);
+//        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
+//        myCrsAdp.changeCursor(myCursor);
 
+        msgdb.insert(message,msgTypeSent, "true");
+        myCursor = msgdb.getAll();
+        myCrsAdp.changeCursor(myCursor);
         txtMessage.setText("");
     }
 
@@ -254,72 +286,72 @@ public class ChatMain extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-     class ChatAdapter extends BaseAdapter {
-
-        /* (non-Javadoc)
-         * @see android.widget.Adapter#getCount()
-         */
-        @Override
-        public int getCount() {
-            return data.size();
-        }
-
-        /* (non-Javadoc)
-         * @see android.widget.Adapter#getItem(int)
-         */
-        @Override
-        public String getItem(int arg0) {
-            return data.get(arg0);
-        }
-
-        /* (non-Javadoc)
-         * @see android.widget.Adapter#getItemId(int)
-         */
-        @Override
-        public long getItemId(int arg0) {
-            return arg0;
-        }
-
-        /* (non-Javadoc)
-         * @see android.widget.Adapter#getView(int, android.view.View, android.view.ViewGroup)
-         */
-        @Override
-        public View getView(int pos, View v, ViewGroup arg2) {
-            String msg = getItem(pos);
-            v = getLayoutInflater().inflate(R.layout.chatsend, null);
-            LinearLayout ll = (LinearLayout)v.findViewById(R.id.v1);
-            TextView lbl = (TextView) v.findViewById(R.id.textRcv2);
-            ImageView iv = (ImageView) v.findViewById(R.id.rcvImageView);
-            lbl.setText(msg);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.weight = 6.0f;
-            if(msg.length()>=25){
-                ViewGroup.LayoutParams pars = lbl.getLayoutParams();
-                pars.width = 850;
-                lbl.setLayoutParams(pars);
-            }
-            if (msgStatus.get(pos)) {
-                ll.setBackgroundResource(R.drawable.rectsend_bgd);
-                ll.setPadding(20, 20, 20, 20);
-                params.gravity = Gravity.RIGHT;
-
-                ll.setLayoutParams(params);
-
-            }
-            else {
-                ll.setBackgroundResource(R.drawable.rectrcv_bgd);
-                ll.setPadding(20, 20, 20, 20);
-                ll.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-                params.gravity = Gravity.LEFT;
-                ll.setLayoutParams(params);
-
-            }
-            return v;
-        }
-
-    }
+//
+//     class ChatAdapter extends BaseAdapter {
+//
+//        /* (non-Javadoc)
+//         * @see android.widget.Adapter#getCount()
+//         */
+//        @Override
+//        public int getCount() {
+//            return data.size();
+//        }
+//
+//        /* (non-Javadoc)
+//         * @see android.widget.Adapter#getItem(int)
+//         */
+//        @Override
+//        public String getItem(int arg0) {
+//            return data.get(arg0);
+//        }
+//
+//        /* (non-Javadoc)
+//         * @see android.widget.Adapter#getItemId(int)
+//         */
+//        @Override
+//        public long getItemId(int arg0) {
+//            return arg0;
+//        }
+//
+//        /* (non-Javadoc)
+//         * @see android.widget.Adapter#getView(int, android.view.View, android.view.ViewGroup)
+//         */
+//        @Override
+//        public View getView(int pos, View v, ViewGroup arg2) {
+//            String msg = getItem(pos);
+//            v = getLayoutInflater().inflate(R.layout.chatsend, null);
+//            LinearLayout ll = (LinearLayout)v.findViewById(R.id.v1);
+//            TextView lbl = (TextView) v.findViewById(R.id.textRcv2);
+//            ImageView iv = (ImageView) v.findViewById(R.id.rcvImageView);
+//            lbl.setText(msg);
+//            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//            params.weight = 6.0f;
+//            if(msg.length()>=25){
+//                ViewGroup.LayoutParams pars = lbl.getLayoutParams();
+//                pars.width = 850;
+//                lbl.setLayoutParams(pars);
+//            }
+//            if (msgStatus.get(pos)) {
+//                ll.setBackgroundResource(R.drawable.rectsend_bgd);
+//                ll.setPadding(20, 20, 20, 20);
+//                params.gravity = Gravity.RIGHT;
+//
+//                ll.setLayoutParams(params);
+//
+//            }
+//            else {
+//                ll.setBackgroundResource(R.drawable.rectrcv_bgd);
+//                ll.setPadding(20, 20, 20, 20);
+//                ll.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+//                params.gravity = Gravity.LEFT;
+//                ll.setLayoutParams(params);
+//
+//            }
+//            return v;
+//        }
+//
+//    }
 
     @Override
     public void onResume() {
@@ -329,6 +361,7 @@ public class ChatMain extends ActionBarActivity {
     }
     @Override //to avoid multiple instances of same activity when the adp change occurs
     protected void onDestroy() {
+        popupWindow.dismiss();
         super.onDestroy();
     }
     @Override
@@ -382,8 +415,10 @@ class MyCursorAdapter extends CursorAdapter{
 
         TextView txtmsg = (TextView)view.findViewById(R.id.textRcv2);
         LinearLayout ll = (LinearLayout)view.findViewById(R.id.v1);
-        String message = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_BODY));
-        String notQuestion = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_TYPE));
+//        String message = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_BODY));
+//        String msgSend = cursor.getString(cursor.getColumnIndexOrThrow(MessageDBHelper.MESSAGE_TYPE));
+        String message = cursor.getString(cursor.getColumnIndexOrThrow(ChatMain.msgdb.C_MSGS));
+        String msgSend = cursor.getString(cursor.getColumnIndexOrThrow(ChatMain.msgdb.C_STATUS));
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -393,7 +428,7 @@ class MyCursorAdapter extends CursorAdapter{
             pars.width = 850;
             txtmsg.setLayoutParams(pars);
         }
-        if (notQuestion.equals("true")) {
+        if (msgSend.equals("true")) {
             ll.setBackgroundResource(R.drawable.rectsend_bgd);
             ll.setPadding(20, 20, 20, 20);
             params.gravity = Gravity.RIGHT;

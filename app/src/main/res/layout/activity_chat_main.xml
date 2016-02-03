@@ -17,7 +17,8 @@
         android:paddingTop="10dp"
         tools:listitem="@layout/chatsend"
         android:divider="#0099efff"
-        >
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll">
     </ListView>
 
     <LinearLayout

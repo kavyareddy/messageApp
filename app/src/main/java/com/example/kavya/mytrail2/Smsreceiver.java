@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.view.LayoutInflater;
@@ -21,11 +22,12 @@ public class Smsreceiver extends BroadcastReceiver {
     private static final int NOTIFY_ME_ID=1337;
     static NotificationManager notificationmgr;
     static Notification note;
-    static boolean notQuestion = true;
+    String notQuestion = "true";//should not be static
     static String option1Txt;
     static String option2Txt;
 
-    MessageDBHelper dbHelper;
+    MessagesDatabase msgDB;
+   //MessageDBHelper dbhelper;
 
     public Smsreceiver() {
     }
@@ -34,10 +36,10 @@ public class Smsreceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // TODO: This method is called when the BroadcastReceiver is receiving
 
-        dbHelper = new MessageDBHelper(context);
+        msgDB = new MessagesDatabase(context);
 
         notificationmgr= (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-        note = new Notification(R.drawable.ic_launcher,"Android Example Status message!", System.currentTimeMillis());
+        note = new Notification(R.drawable.n_icon,"Android Example Status message!", System.currentTimeMillis());
 
         // This pending intent will open after notification click
         PendingIntent notifyIntent= PendingIntent.getActivity(context, 0,
@@ -64,35 +66,41 @@ public class Smsreceiver extends BroadcastReceiver {
                     note.setLatestEventInfo(context, "Messaging",msgs[i].getMessageBody().toString(), notifyIntent);
                     notificationmgr.notify(NOTIFY_ME_ID, note);
                     ChatMain.data.add(msgs[i].getMessageBody().toString());
-                    ChatMain.msgsent = false;
-                    ChatMain.msgStatus.add(ChatMain.msgsent);
+//                    ChatMain.msgsent = false;
+//                    ChatMain.msgStatus.add(ChatMain.msgsent);
                     //ChatMain.adp.notifyDataSetChanged();
 
                     String sms = msgs[i].getMessageBody().toString();
 
-                    ChatMain.msgType = "false";
-                    ContentValues values = new ContentValues();
-                    values.put(MessageDBHelper.MESSAGE_BODY, sms);
-                    values.put(MessageDBHelper.MESSAGE_TYPE, ChatMain.msgType);
-                    dbHelper.insert(values);
-                    ChatMain.myCursor = ChatMain.mydb.rawQuery("SELECT * From messagesTable",null);
-                    ChatMain.myCrsAdp.changeCursor(ChatMain.myCursor);
+                    String msgTypeSent = "false";
+//                    ContentValues values = new ContentValues();
+//                    values.put(MessageDBHelper.MESSAGE_BODY, sms);
+//                    values.put(MessageDBHelper.MESSAGE_TYPE, ChatMain.msgTypeSent);
+//                    dbHelper.insert(values);
+//                    ChatMain.myCursor = ChatMain.mydb.rawQuery("SELECT * From messagesTable1",null);
+//                    ChatMain.myCrsAdp.changeCursor(ChatMain.myCursor);
 
 
                     //conditions to be checked.
                     if(sms.contains("Y or N")){
                         option1Txt = "Y";
                         option2Txt = "N";
-                        notQuestion = false;
+                        notQuestion = "false";
                     }else if(sms.contains("GO or NOGO")){
                         option1Txt = "GO";
                         option2Txt = "NOGO";
-                        notQuestion = false;
+                        notQuestion = "false";
                     }else if(sms.contains("MALE or FEMALE")) {
                         option1Txt = "Y";
                         option2Txt = "N";
-                        notQuestion = false;
+                        notQuestion = "false";
                     }
+                    //ChatMain.msgFormat.add(notQuestion);
+
+                    msgDB.insert(sms,msgTypeSent, notQuestion);
+                    Cursor myCursor = msgDB.getAll();
+                    ChatMain.myCrsAdp.changeCursor(myCursor);
+
                 }
 
             }

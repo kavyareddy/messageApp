@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -61,6 +62,7 @@ public class ChatMain extends ActionBarActivity {
     TextView smstext;
     Button option1Dismiss;
     Button option2Dismiss;
+    Button close;
     static boolean active = false;
 
 
@@ -93,7 +95,7 @@ public class ChatMain extends ActionBarActivity {
         smstext = (TextView)popupView.findViewById(R.id.sms);
         option1Dismiss = (Button)popupView.findViewById(R.id.option1);
         option2Dismiss = (Button)popupView.findViewById(R.id.option2);
-
+        close = (Button)popupView.findViewById(R.id.btnClose);
 
         if (Smsreceiver.notificationmgr != null) {
             Smsreceiver.notificationmgr.cancel(1337);
@@ -384,6 +386,7 @@ public class ChatMain extends ActionBarActivity {
 //        option2Dismiss.setText(Smsreceiver.option2Txt);
         option1Dismiss.setText(opt1);
         option2Dismiss.setText(opt2);
+
         option1Dismiss.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -405,7 +408,16 @@ public class ChatMain extends ActionBarActivity {
 //            popupWindow.dismiss();
 //        }
         //myLayout.getBackground().setAlpha(100);
-        popupWindow.showAtLocation(myLayout,50,100,1000);
+        close.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                popupWindow.dismiss();
+            }});
+        popupWindow.showAtLocation(myLayout,Gravity.CENTER,0,0);
+        myLayout.setAlpha(0.5F);
+//        popupWindow.setBackgroundDrawable(new ColorDrawable(
+//                android.graphics.Color.TRANSPARENT));
         //@android:color/darker_gray
     }
 

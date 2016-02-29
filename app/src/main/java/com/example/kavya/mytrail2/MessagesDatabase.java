@@ -50,7 +50,6 @@ public class MessagesDatabase {
         msgDB = dbHelper.getReadableDatabase();
         Cursor messagesFetched;
         messagesFetched = msgDB.rawQuery("SELECT * FROM "+ TABLE_NAME ,null);
-        //msgDB.close();
         return messagesFetched;
 
     }
@@ -63,16 +62,17 @@ public class MessagesDatabase {
     }
 
     class MessagesDBHelper extends SQLiteOpenHelper {
-        public MessagesDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+        //constructor
+        public MessagesDBHelper(Context context, String name,
+                                SQLiteDatabase.CursorFactory factory, int version) {
             super(context, name, factory, version);
-
         }
-
         @Override
-        public void onCreate(SQLiteDatabase db) {//this function is called only once in the life time of the database
-//            String sql1 = String.format("DROP TABLE if exists %s;", TABLE_NAME);
-//            db.execSQL(sql1);
-            String sql = String.format("CREATE TABLE %s( %s INTEGER PRIMARY KEY AUTOINCREMENT, %s text, %s text, %s text, %s text, %s text);", TABLE_NAME,C_id, C_MSGS, C_STATUS, C_MSGTYPE, C_OPTION1, C_OPTION2);
+        public void onCreate(SQLiteDatabase db) {
+        //this function is called only once in the life time of the database
+            String sql = String.format(
+                    "CREATE TABLE %s( %s INTEGER PRIMARY KEY AUTOINCREMENT, %s text, %s text, %s text, %s text, %s text);",
+                            TABLE_NAME,C_id, C_MSGS, C_STATUS, C_MSGTYPE, C_OPTION1, C_OPTION2);
             Log.d(TAG, "onCreate: " + sql);
             db.execSQL(sql);//eq to execute db query
         }

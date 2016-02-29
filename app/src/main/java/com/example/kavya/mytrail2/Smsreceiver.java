@@ -63,7 +63,7 @@ public class Smsreceiver extends BroadcastReceiver {
                 str += msgs[i].getMessageBody().toString();
                 str += "\n";
                 if(msgs[i].getOriginatingAddress().equals("+15125457273")){
-                    note.setLatestEventInfo(context, "Messaging",msgs[i].getMessageBody().toString(), notifyIntent);
+                    note.setLatestEventInfo(context, "Tailored Health Messaging",msgs[i].getMessageBody().toString(), notifyIntent);
                     notificationmgr.notify(NOTIFY_ME_ID, note);
                     ChatMain.data.add(msgs[i].getMessageBody().toString());
 //                    ChatMain.msgsent = false;
@@ -91,8 +91,12 @@ public class Smsreceiver extends BroadcastReceiver {
                         option2Txt = "NOGO";
                         notQuestion = "false";
                     }else if(sms.contains("MALE or FEMALE")) {
-                        option1Txt = "Y";
-                        option2Txt = "N";
+                        option1Txt = "MALE";
+                        option2Txt = "FEMALE";
+                        notQuestion = "false";
+                    }else if(sms.contains("GO or EXIT")){
+                        option1Txt = "GO";
+                        option2Txt = "EXIT";
                         notQuestion = "false";
                     }
                     //ChatMain.msgFormat.add(notQuestion);

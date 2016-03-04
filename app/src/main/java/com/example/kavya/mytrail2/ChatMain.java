@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
@@ -34,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -60,8 +62,11 @@ public class ChatMain extends ActionBarActivity {
 //    static boolean msgsent = true;
     PopupWindow popupWindow;
     TextView smstext;
-    Button option1Dismiss;
-    Button option2Dismiss;
+    RadioButton option1Dismiss;
+    RadioButton option2Dismiss;
+    Button option3Dismiss;
+    Button option4Dismiss;
+    Button option5Dismiss;
     Button close;
     static boolean active = false;
 
@@ -85,17 +90,19 @@ public class ChatMain extends ActionBarActivity {
 
 
         LayoutInflater layoutInflater
-                = (LayoutInflater)getBaseContext()
+                = (LayoutInflater) getBaseContext()
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = layoutInflater.inflate(R.layout.popupwindow, null);
         popupWindow = new PopupWindow(
                 popupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        smstext = (TextView)popupView.findViewById(R.id.sms);
-        option1Dismiss = (Button)popupView.findViewById(R.id.option1);
-        option2Dismiss = (Button)popupView.findViewById(R.id.option2);
-        close = (Button)popupView.findViewById(R.id.btnClose);
+        smstext = (TextView) popupView.findViewById(R.id.sms);
+        option1Dismiss = (RadioButton) popupView.findViewById(R.id.option1);
+        option2Dismiss = (RadioButton) popupView.findViewById(R.id.option2);
+        option3Dismiss = (RadioButton) popupView.findViewById(R.id.option3);
+        option4Dismiss = (RadioButton) popupView.findViewById(R.id.option4);
+        close = (Button) popupView.findViewById(R.id.btnClose);
 
         if (Smsreceiver.notificationmgr != null) {
             Smsreceiver.notificationmgr.cancel(1337);
@@ -120,46 +127,49 @@ public class ChatMain extends ActionBarActivity {
         final String sms;
         final String option1;
         final String option2;
-        if(c!=null && c.getCount()>0 ) {
-            if(c.moveToFirst()) {
+        if (c != null && c.getCount() > 0) {
+            if (c.moveToFirst()) {
                 msgType = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGTYPE));
                 sms = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGS));
                 option1 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION1));
                 option2 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION2));
-            }else {
+            } else {
                 msgType = "true";
                 sms = "";
                 option1 = "";
                 option2 = "";
             }
 
-        }else{
+        } else {
             msgType = "true";
             sms = "";
             option1 = "";
             option2 = "";
         }
-        if(msgType.equals("true")){
+        if (msgType.equals("true")) {
             txtMessage.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(txtMessage, InputMethodManager.SHOW_IMPLICIT);
 
-        }else {
-            txtMessage.setFocusableInTouchMode(false);
+        } else if(msgType.equals("number")) {
+            txtMessage.setRawInputType(Configuration.KEYBOARD_QWERTY);
+        }else{
+                txtMessage.setFocusableInTouchMode(false);
 
 //            if (data.size() != 0) {
 //                sms = data.get(data.size()-1);
 //            } else
 //                sms = "";
 
-            txtMessage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //myLayout.getBackground().setAlpha(220);
-                    popup(sms, option1,option2);
-                    //myLayout.getBackground().setAlpha(0);
-                }
-            });
+                txtMessage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //myLayout.getBackground().setAlpha(220);
+                        popup(sms, option1,option2);
+                        //myLayout.getBackground().setAlpha(0);
+                    }
+                });
+
 
         }
 
@@ -386,7 +396,8 @@ public class ChatMain extends ActionBarActivity {
 //        option2Dismiss.setText(Smsreceiver.option2Txt);
         option1Dismiss.setText(opt1);
         option2Dismiss.setText(opt2);
-
+        option3Dismiss.setVisibility(View.GONE);
+        option4Dismiss.setVisibility(View.GONE);
         option1Dismiss.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -407,7 +418,7 @@ public class ChatMain extends ActionBarActivity {
 //        if(popupWindow.isShowing()){
 //            popupWindow.dismiss();
 //        }
-        //myLayout.getBackground().setAlpha(100);
+         //myLayout.getBackground().setAlpha(100);
         close.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v) {

@@ -25,6 +25,8 @@ public class Smsreceiver extends BroadcastReceiver {
     String notQuestion = "true";//should not be static
     static String option1Txt;
     static String option2Txt;
+    static String option3Txt;
+    static String option4Txt;
 
     MessagesDatabase msgDB;
    //MessageDBHelper dbhelper;
@@ -85,19 +87,31 @@ public class Smsreceiver extends BroadcastReceiver {
                     if(sms.contains("Y or N")){
                         option1Txt = "Y";
                         option2Txt = "N";
+                        option3Txt = "";
+                        option4Txt = "";
                         notQuestion = "false";
                     }else if(sms.contains("GO or NOGO")){
                         option1Txt = "GO";
                         option2Txt = "NOGO";
+                        option3Txt = "";
+                        option4Txt = "";
                         notQuestion = "false";
                     }else if(sms.contains("MALE or FEMALE")) {
                         option1Txt = "MALE";
                         option2Txt = "FEMALE";
+                        option3Txt = "OTHERS";
+                        option4Txt = "";
                         notQuestion = "false";
                     }else if(sms.contains("GO or EXIT")){
                         option1Txt = "GO";
                         option2Txt = "EXIT";
+                        option3Txt = "";
+                        option4Txt = "";
                         notQuestion = "false";
+                    }else if(sms.contains("Text a number")){
+                        notQuestion = "number";
+                    }else{
+                        notQuestion = "true";
                     }
                     //ChatMain.msgFormat.add(notQuestion);
 

@@ -23,10 +23,10 @@ public class Smsreceiver extends BroadcastReceiver {
     static NotificationManager notificationmgr;
     static Notification note;
     String notQuestion = "true";//should not be static
-    static String option1Txt;
-    static String option2Txt;
-    static String option3Txt;
-    static String option4Txt;
+    static String option1Txt="";
+    static String option2Txt="";
+    static String option3Txt="";
+    static String option4Txt="";
 
     MessagesDatabase msgDB;
    //MessageDBHelper dbhelper;
@@ -84,38 +84,77 @@ public class Smsreceiver extends BroadcastReceiver {
 
 
                     //conditions to be checked.
-                    if(sms.contains("Y or N")){
-                        option1Txt = "Y";
-                        option2Txt = "N";
+//                    if(sms.contains("Y or N")){
+//                        option1Txt = "Y";
+//                        option2Txt = "N";
+//                        option3Txt = "";
+//                        option4Txt = "";
+//                        notQuestion = "false";
+//                    }else if(sms.contains("GO or NOGO")){
+//                        option1Txt = "GO";
+//                        option2Txt = "NOGO";
+//                        option3Txt = "";
+//                        option4Txt = "";
+//                        notQuestion = "false";
+//                    }else if(sms.contains("MALE or FEMALE")) {
+//                        option1Txt = "MALE";
+//                        option2Txt = "FEMALE";
+//                        option3Txt = "OTHERS";
+//                        option4Txt = "";
+//                        notQuestion = "false";
+//                    }else if(sms.contains("GO or EXIT")){
+//                        option1Txt = "GO";
+//                        option2Txt = "EXIT";
+//                        option3Txt = "";
+//                        option4Txt = "";
+//                        notQuestion = "false";
+//                    }else if(sms.contains("Text a number")){
+//                        notQuestion = "number";
+//                    }else{
+//                        notQuestion = "true";
+//                    }
+
+
+
+                    String smsOriginal = sms;
+                    sms = sms.toUpperCase();
+                    if(sms.matches("^\\s*[A-Za-z0-9,;'\"\\s]+[.?!]*\\s*[A-Za-z0-9,;'\"\\s]+TEXT \\w+ OR \\w+$")){
+
+                        String[] options = sms.split(" ");
+                        int len = options.length;
+                        option1Txt = options[len-3];
+                        option2Txt = options[len-1];
                         option3Txt = "";
                         option4Txt = "";
                         notQuestion = "false";
-                    }else if(sms.contains("GO or NOGO")){
-                        option1Txt = "GO";
-                        option2Txt = "NOGO";
-                        option3Txt = "";
+                    }else if(sms.matches("^\\s*[A-Za-z0-9,;'\"\\s]+[.?!]*\\s*[A-Za-z0-9,;'\"\\s]+TEXT \\w+ OR \\w+ OR \\w+$")){
+                        System.out.println("matched");
+                        String[] options = sms.split(" ");
+                        int len = options.length;
+                        option1Txt = options[len-5];
+                        option2Txt = options[len-3];
+                        option3Txt = options[len-1];
                         option4Txt = "";
                         notQuestion = "false";
-                    }else if(sms.contains("MALE or FEMALE")) {
-                        option1Txt = "MALE";
-                        option2Txt = "FEMALE";
-                        option3Txt = "OTHERS";
-                        option4Txt = "";
+                    }else if(sms.matches("^\\s*[A-Za-z0-9,;'\"\\s]+[.?!]*\\s*[A-Za-z0-9,;'\"\\s]+TEXT \\w+ OR \\w+ OR \\w+ OR \\w+$")){
+                        System.out.println("matched");
+                        String[] options = sms.split(" ");
+                        int len = options.length;
+                        option1Txt = options[len-7];
+                        option2Txt = options[len-5];
+                        option3Txt = options[len-3];
+                        option4Txt = options[len-1];
                         notQuestion = "false";
-                    }else if(sms.contains("GO or EXIT")){
-                        option1Txt = "GO";
-                        option2Txt = "EXIT";
-                        option3Txt = "";
-                        option4Txt = "";
-                        notQuestion = "false";
-                    }else if(sms.contains("Text a number")){
+                    }else if(sms.matches("^\\s*[A-Za-z0-9,;'\"\\s]+[.?!]*\\s*[A-Za-z0-9,;'\"\\s]+TEXT [A-Za-z0-9,;'\"\\s]+NUMBER$")) {
                         notQuestion = "number";
                     }else{
                         notQuestion = "true";
                     }
+
+
                     //ChatMain.msgFormat.add(notQuestion);
 
-                    msgDB.insert(sms,msgTypeSent, notQuestion, option1Txt,option2Txt);
+                    msgDB.insert(smsOriginal,msgTypeSent, notQuestion, option1Txt,option2Txt,option3Txt,option4Txt);
                     Cursor myCursor = msgDB.getAll();
                     ChatMain.myCrsAdp.changeCursor(myCursor);
 

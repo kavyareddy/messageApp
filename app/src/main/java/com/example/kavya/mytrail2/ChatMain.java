@@ -127,17 +127,23 @@ public class ChatMain extends ActionBarActivity {
         final String sms;
         final String option1;
         final String option2;
+        final String option3;
+        final String option4;
         if (c != null && c.getCount() > 0) {
             if (c.moveToFirst()) {
                 msgType = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGTYPE));
                 sms = c.getString(c.getColumnIndexOrThrow(msgdb.C_MSGS));
                 option1 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION1));
                 option2 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION2));
+                option3 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION3));
+                option4 = c.getString(c.getColumnIndexOrThrow(msgdb.C_OPTION4));
             } else {
                 msgType = "true";
                 sms = "";
                 option1 = "";
                 option2 = "";
+                option3 = "";
+                option4 = "";
             }
 
         } else {
@@ -145,6 +151,8 @@ public class ChatMain extends ActionBarActivity {
             sms = "";
             option1 = "";
             option2 = "";
+            option3 = "";
+            option4 = "";
         }
         if (msgType.equals("true")) {
             txtMessage.requestFocus();
@@ -165,7 +173,7 @@ public class ChatMain extends ActionBarActivity {
                     @Override
                     public void onClick(View v) {
                         //myLayout.getBackground().setAlpha(220);
-                        popup(sms, option1,option2);
+                        popup(sms, option1,option2,option3,option4);
                         //myLayout.getBackground().setAlpha(0);
                     }
                 });
@@ -279,7 +287,7 @@ public class ChatMain extends ActionBarActivity {
 //        myCursor = mydb.rawQuery("SELECT * From messagesTable",null);
 //        myCrsAdp.changeCursor(myCursor);
 
-        msgdb.insert(message,msgTypeSent, "true", "","");
+        msgdb.insert(message,msgTypeSent, "true", "","","","");
         myCursor = msgdb.getAll();
         myCrsAdp.changeCursor(myCursor);
         txtMessage.setText("");
@@ -390,14 +398,23 @@ public class ChatMain extends ActionBarActivity {
         active = false;
     }
 
-    public void popup(String sms, String opt1, String opt2){
+    public void popup(String sms, String opt1, String opt2,String opt3, String opt4){
         smstext.setText(sms);
 //        option1Dismiss.setText(Smsreceiver.option1Txt);
 //        option2Dismiss.setText(Smsreceiver.option2Txt);
         option1Dismiss.setText(opt1);
         option2Dismiss.setText(opt2);
-        option3Dismiss.setVisibility(View.GONE);
-        option4Dismiss.setVisibility(View.GONE);
+        if(opt3.equals("")) {
+            option3Dismiss.setVisibility(View.GONE);
+        }else
+        {
+            option3Dismiss.setText(opt3);
+        }
+        if(opt4.equals("")) {
+            option4Dismiss.setVisibility(View.GONE);
+        }else{
+            option4Dismiss.setText(opt4);
+        }
         option1Dismiss.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -412,6 +429,23 @@ public class ChatMain extends ActionBarActivity {
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 String msgToSend = option2Dismiss.getText().toString();
+                sendSMS(txtPhoneNo, msgToSend);
+                popupWindow.dismiss();
+            }});
+        option3Dismiss.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                String msgToSend = option3Dismiss.getText().toString();
+                popupWindow.dismiss();
+                sendSMS(txtPhoneNo, msgToSend);
+
+            }});
+        option4Dismiss.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                String msgToSend = option4Dismiss.getText().toString();
                 sendSMS(txtPhoneNo, msgToSend);
                 popupWindow.dismiss();
             }});
